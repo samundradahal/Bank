@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bank/api"
 	"bank/controller"
 	"bank/db"
+	"bank/token"
 	"bank/util"
 	"log"
 
@@ -10,6 +12,10 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 )
+
+type server struct {
+	tokenMaker token.Maker
+}
 
 func init() {
 	db.ConnectDb()
@@ -25,18 +31,19 @@ func main() {
 	}
 
 	server := gin.New()
-	server.POST("/createaccount", controller.CreateAccount)
-	server.GET("/accountdetails", controller.GetAccountDetails)
-	server.GET("/accountdetails/:id", controller.FindAccountDetails)
-	server.PATCH("/accountdetails/:id", controller.UpdateAccountDetails)
-	server.DELETE("/accountdetails/:id", controller.AccountDetailsDelete)
-
-	server.POST("/createtransfer", controller.CreateTransfer)
-	server.POST("/createentry", controller.CreateEntry)
-	server.GET("/entrydetails", controller.GetEntries)
-
 	server.POST("/users/login", controller.LoginUser)
 	server.POST("/createuser", controller.CreateUsers)
+	authRoutes := server.Group("/").Use(api.AuthMiddleware())
+	authRoutes.POST("/createaccount", controller.CreateAccount)
+	authRoutes.GET("/accountdetails", controller.GetAccountDetails)
+	authRoutes.GET("/accountdetails/:id", controller.FindAccountDetails)
+	authRoutes.PATCH("/accountdetails/:id", controller.UpdateAccountDetails)
+	authRoutes.DELETE("/accountdetails/:id", controller.AccountDetailsDelete)
+
+	authRoutes.POST("/createtransfer", controller.CreateTransfer)
+	authRoutes.POST("/createentry", controller.CreateEntry)
+	authRoutes.GET("/entrydetails", controller.GetEntries)
+
 	server.Run(config.Serverport)
 
 }

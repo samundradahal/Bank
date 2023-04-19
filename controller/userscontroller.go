@@ -96,7 +96,7 @@ func LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
